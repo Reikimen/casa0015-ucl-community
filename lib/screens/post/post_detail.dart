@@ -34,6 +34,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   bool _showComments = false;
   bool _submittingComment = false;
 
+  // 翻译相关状态
+  String _translatedTitle = '';
+  String _translatedContent = '';
+  List<String> _translatedComments = [];
+  bool _isTranslating = false;
+  bool _translationCompleted = false;
+
   @override
   void initState() {
     super.initState();
@@ -50,6 +57,76 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     super.dispose();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _checkAndTranslate();
+  }
+
+  // 当应用语言或自动翻译设置变化时，检查是否需要重新翻译
+  void _checkAndTranslate() {
+    final appProvider = Provider.of<AppProvider>(context, listen: false);
+
+    // 只有当帖子已加载且需要翻译时
+    if (_post != null && appProvider.isEnglish && appProvider.autoTranslate) {
+      _translateContent();
+    }
+  }
+
+  // 翻译帖子内容和评论
+  Future<void> _translateContent() async {
+    if (_post == null) return;
+
+    setState(() {
+      _isTranslating = true;
+    });
+
+    try {
+      final appProvider = Provider.of<AppProvider>(context, listen: false);
+
+      // 翻译标题
+      final translatedTitle = await appProvider.translateText(
+        _post!.title,
+        toEnglish: appProvider.isEnglish,
+      );
+
+      // 翻译内容
+      final translatedContent = await appProvider.translateText(
+        _post!.content,
+        toEnglish: appProvider.isEnglish,
+      );
+
+      // 翻译评论
+      List<String> translatedComments = [];
+      if (_comments.isNotEmpty) {
+        for (var comment in _comments) {
+          final translatedComment = await appProvider.translateText(
+            comment.content,
+            toEnglish: appProvider.isEnglish,
+          );
+          translatedComments.add(translatedComment);
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _translatedTitle = translatedTitle;
+          _translatedContent = translatedContent;
+          _translatedComments = translatedComments;
+          _isTranslating = false;
+          _translationCompleted = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isTranslating = false;
+        });
+      }
+      debugPrint('翻译内容出错: $e');
+    }
+  }
+
   // 获取帖子详情
   Future<void> _fetchPostDetail() async {
     setState(() {
@@ -63,6 +140,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         _post = post;
         _isLoadingPost = false;
       });
+
+      // 获取数据后检查是否需要翻译
+      _checkAndTranslate();
     } catch (e) {
       setState(() {
         _isLoadingPost = false;
@@ -93,7 +173,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       setState(() {
         _comments = comments;
         _isLoadingComments = false;
+
+        // 重置翻译评论的列表
+        _translatedComments = List.filled(comments.length, '');
       });
+
+      // 获取评论后，检查是否需要翻译
+      final appProvider = Provider.of<AppProvider>(context, listen: false);
+      if (appProvider.isEnglish && appProvider.autoTranslate) {
+        _translateContent();
+      }
     } catch (e) {
       setState(() {
         _isLoadingComments = false;
@@ -272,6 +361,15 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   Widget build(BuildContext context) {
     final appProvider = Provider.of<AppProvider>(context);
 
+    // 当语言或翻译设置变化时，重新检查翻译需求
+    if (_post != null && _translationCompleted &&
+        ((appProvider.isEnglish && appProvider.autoTranslate) ||
+            (!appProvider.isEnglish && !appProvider.autoTranslate))) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _translateContent();
+      });
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -351,8 +449,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // 标题
-                        Text(
-                          _post!.title,
+                        _isTranslating
+                            ? _buildTranslatingIndicator()
+                            : Text(
+                          appProvider.isEnglish && appProvider.autoTranslate
+                              ? _translatedTitle
+                              : _post!.title,
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -404,8 +506,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         const SizedBox(height: 16),
 
                         // 内容
-                        Text(
-                          _post!.content,
+                        _isTranslating
+                            ? _buildTranslatingIndicator()
+                            : Text(
+                          appProvider.isEnglish && appProvider.autoTranslate
+                              ? _translatedContent
+                              : _post!.content,
                           style: const TextStyle(
                             fontSize: 16,
                             height: 1.5,
@@ -523,8 +629,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: _comments.length,
                             itemBuilder: (context, index) {
-                              final comment = _comments[index];
-                              return _buildCommentItem(comment, appProvider);
+                              return _buildCommentItem(
+                                _comments[index],
+                                appProvider,
+                                translatedContent:
+                                appProvider.isEnglish &&
+                                    appProvider.autoTranslate &&
+                                    _translatedComments.length > index
+                                    ? _translatedComments[index]
+                                    : null,
+                              );
                             },
                           ),
                       ],
@@ -599,6 +713,34 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     );
   }
 
+  // 构建翻译中指示器
+  Widget _buildTranslatingIndicator() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.grey[400]!),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            'Translating...',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[500],
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // 构建互动按钮
   Widget _buildActionButton({
     required IconData icon,
@@ -629,7 +771,15 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   // 构建评论项
-  Widget _buildCommentItem(Comment comment, AppProvider appProvider) {
+  Widget _buildCommentItem(
+      Comment comment,
+      AppProvider appProvider,
+      {String? translatedContent}
+      ) {
+    final isTranslated = translatedContent != null &&
+        translatedContent.isNotEmpty &&
+        translatedContent != comment.content;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
@@ -678,11 +828,25 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
                 const SizedBox(height: 4),
 
-                // 评论内容
+                // 评论内容（原始或翻译）
                 Text(
-                  comment.content,
+                  isTranslated ? translatedContent! : comment.content,
                   style: const TextStyle(fontSize: 14),
                 ),
+
+                // 显示"已翻译"标记（如适用）
+                if (isTranslated)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: Text(
+                      appProvider.getLocalizedString('(已翻译)', '(Translated)'),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[500],
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),

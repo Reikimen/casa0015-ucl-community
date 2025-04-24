@@ -8,7 +8,7 @@ import '../providers/user_provider.dart';
 import '../screens/post/post_detail.dart';
 import '../screens/auth/login_screen.dart';
 
-class PostCard extends StatelessWidget {
+class PostCard extends StatefulWidget {
   final Post post;
 
   const PostCard({
@@ -17,10 +17,103 @@ class PostCard extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<PostCard> createState() => _PostCardState();
+}
+
+class _PostCardState extends State<PostCard> {
+  String _translatedTitle = '';
+  String _translatedContent = '';
+  bool _isTranslating = false;
+  bool _translationCompleted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _translatedTitle = widget.post.title;
+    _translatedContent = widget.post.content;
+
+    // 初始化时检查是否需要翻译
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndTranslate();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _checkAndTranslate();
+  }
+
+  // 当应用语言或自动翻译设置变化时，检查是否需要重新翻译
+  void _checkAndTranslate() {
+    final appProvider = Provider.of<AppProvider>(context, listen: false);
+
+    // 如果已经完成翻译，但语言或翻译设置变化，重新翻译
+    if (_translationCompleted &&
+        (appProvider.isEnglish || appProvider.autoTranslate)) {
+      _translateContent();
+    }
+    // 如果未完成翻译且需要翻译
+    else if (!_translationCompleted &&
+        appProvider.isEnglish &&
+        appProvider.autoTranslate) {
+      _translateContent();
+    }
+  }
+
+  // 翻译内容
+  Future<void> _translateContent() async {
+    setState(() {
+      _isTranslating = true;
+    });
+
+    try {
+      final appProvider = Provider.of<AppProvider>(context, listen: false);
+
+      // 翻译标题
+      final translatedTitle = await appProvider.translateText(
+        widget.post.title,
+        toEnglish: appProvider.isEnglish,
+      );
+
+      // 翻译内容
+      final translatedContent = await appProvider.translateText(
+        widget.post.content,
+        toEnglish: appProvider.isEnglish,
+      );
+
+      if (mounted) {
+        setState(() {
+          _translatedTitle = translatedTitle;
+          _translatedContent = translatedContent;
+          _isTranslating = false;
+          _translationCompleted = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isTranslating = false;
+        });
+      }
+      debugPrint('翻译内容出错: $e');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final appProvider = Provider.of<AppProvider>(context);
     final postProvider = Provider.of<PostProvider>(context);
     final userProvider = Provider.of<UserProvider>(context);
+
+    // 检查是否需要再次翻译（语言或设置发生变化）
+    if (_translationCompleted &&
+        ((appProvider.isEnglish && appProvider.autoTranslate) ||
+            (!appProvider.isEnglish && !appProvider.autoTranslate))) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _translateContent();
+      });
+    }
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -34,7 +127,7 @@ class PostCard extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => PostDetailScreen(postId: post.id),
+              builder: (context) => PostDetailScreen(postId: widget.post.id),
             ),
           );
         },
@@ -49,7 +142,7 @@ class PostCard extends StatelessWidget {
                 topRight: Radius.circular(8),
               ),
               child: CachedNetworkImage(
-                imageUrl: post.imageUrl,
+                imageUrl: widget.post.imageUrl,
                 height: 180,
                 width: double.infinity,
                 fit: BoxFit.cover,
@@ -72,9 +165,13 @@ class PostCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 标题
-                  Text(
-                    post.title,
+                  // 标题 (可能是翻译后的)
+                  _isTranslating
+                      ? _buildTranslatingIndicator()
+                      : Text(
+                    appProvider.isEnglish && appProvider.autoTranslate
+                        ? _translatedTitle
+                        : widget.post.title,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -85,9 +182,13 @@ class PostCard extends StatelessWidget {
 
                   const SizedBox(height: 8),
 
-                  // 内容预览
-                  Text(
-                    post.content,
+                  // 内容预览 (可能是翻译后的)
+                  _isTranslating
+                      ? _buildTranslatingIndicator()
+                      : Text(
+                    appProvider.isEnglish && appProvider.autoTranslate
+                        ? _translatedContent
+                        : widget.post.content,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[700],
@@ -102,10 +203,10 @@ class PostCard extends StatelessWidget {
                   Row(
                     children: [
                       // 作者头像
-                      if (post.authorAvatar != null)
+                      if (widget.post.authorAvatar != null)
                         CircleAvatar(
                           radius: 16,
-                          backgroundImage: CachedNetworkImageProvider(post.authorAvatar!),
+                          backgroundImage: CachedNetworkImageProvider(widget.post.authorAvatar!),
                         )
                       else
                         const CircleAvatar(
@@ -119,7 +220,7 @@ class PostCard extends StatelessWidget {
                       // 作者名称
                       Expanded(
                         child: Text(
-                          post.authorName,
+                          widget.post.authorName,
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -130,7 +231,7 @@ class PostCard extends StatelessWidget {
 
                       // 发布时间
                       Text(
-                        _getFormattedDate(post.createdAt, appProvider.isEnglish),
+                        _getFormattedDate(widget.post.createdAt, appProvider.isEnglish),
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey[600],
@@ -147,13 +248,13 @@ class PostCard extends StatelessWidget {
                     children: [
                       // 点赞按钮
                       _buildActionButton(
-                        icon: post.isLiked
+                        icon: widget.post.isLiked
                             ? Icons.favorite
                             : Icons.favorite_border,
-                        color: post.isLiked
+                        color: widget.post.isLiked
                             ? const Color(0xFFE53935)
                             : Colors.black54,
-                        label: '${post.likesCount}',
+                        label: '${widget.post.likesCount}',
                         onPressed: () {
                           _handleLike(context, userProvider, postProvider);
                         },
@@ -162,13 +263,13 @@ class PostCard extends StatelessWidget {
                       // 评论按钮
                       _buildActionButton(
                         icon: Icons.comment_outlined,
-                        label: '${post.commentsCount}',
+                        label: '${widget.post.commentsCount}',
                         onPressed: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => PostDetailScreen(
-                                postId: post.id,
+                                postId: widget.post.id,
                                 initialShowComments: true,
                               ),
                             ),
@@ -182,7 +283,7 @@ class PostCard extends StatelessWidget {
                         label: appProvider.getLocalizedString('分享', 'Share'),
                         onPressed: () {
                           // 调用分享功能
-                          postProvider.sharePost(post.id);
+                          postProvider.sharePost(widget.post.id);
 
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -202,6 +303,31 @@ class PostCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  // 构建翻译中指示器
+  Widget _buildTranslatingIndicator() {
+    return Row(
+      children: [
+        SizedBox(
+          width: 14,
+          height: 14,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.grey[400]!),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          'Translating...',
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey[500],
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      ],
     );
   }
 
@@ -261,10 +387,10 @@ class PostCard extends StatelessWidget {
     }
 
     // 如果已经点赞，则取消点赞，否则添加点赞
-    if (post.isLiked) {
-      postProvider.unlikePost(post.id);
+    if (widget.post.isLiked) {
+      postProvider.unlikePost(widget.post.id);
     } else {
-      postProvider.likePost(post.id);
+      postProvider.likePost(widget.post.id);
     }
   }
 

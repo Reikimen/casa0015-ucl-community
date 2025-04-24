@@ -76,6 +76,18 @@ class AppDrawer extends StatelessWidget {
           // 登录/注销按钮
           _buildAuthButton(context, userProvider, appProvider),
 
+          const Divider(),
+
+          // 测试翻译按钮
+          _buildTestTranslationButton(context, appProvider),
+
+          const SizedBox(height: 10),
+
+          // 自动翻译开关
+          _buildAutoTranslateSwitch(context, appProvider),
+
+          const SizedBox(height: 10),
+
           // 底部语言切换按钮
           _buildLanguageToggle(context, appProvider),
         ],
@@ -170,6 +182,88 @@ class AppDrawer extends StatelessWidget {
           Navigator.pushNamed(context, '/login');
         }
       },
+    );
+  }
+
+  // 构建测试翻译按钮
+  Widget _buildTestTranslationButton(
+      BuildContext context,
+      AppProvider appProvider
+      ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
+        ),
+        onPressed: () async {
+          final result = await appProvider.testTranslation();
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('翻译测试结果: "$result"'),
+                duration: const Duration(seconds: 5),
+              ),
+            );
+          }
+        },
+        child: Text(
+          appProvider.getLocalizedString('测试翻译功能', 'Test Translation'),
+        ),
+      ),
+    );
+  }
+
+  // 构建自动翻译开关
+  Widget _buildAutoTranslateSwitch(
+      BuildContext context,
+      AppProvider appProvider
+      ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // 自动翻译标签
+          Expanded(
+            child: Text(
+              appProvider.getLocalizedString(
+                  '自动翻译内容',
+                  'Auto Translate Content'
+              ),
+              style: const TextStyle(fontSize: 16),
+            ),
+          ),
+
+          // 开关
+          Switch(
+            value: appProvider.autoTranslate,
+            activeColor: const Color(0xFFE53935),
+            onChanged: (value) async {
+              await appProvider.toggleAutoTranslate();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      appProvider.autoTranslate
+                          ? appProvider.getLocalizedString(
+                          '自动翻译已开启',
+                          'Auto translation enabled'
+                      )
+                          : appProvider.getLocalizedString(
+                          '自动翻译已关闭',
+                          'Auto translation disabled'
+                      ),
+                    ),
+                    duration: const Duration(seconds: 1),
+                  ),
+                );
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 
