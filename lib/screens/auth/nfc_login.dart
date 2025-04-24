@@ -48,8 +48,12 @@ class _NfcLoginScreenState extends State<NfcLoginScreen> with SingleTickerProvid
   @override
   void dispose() {
     _animationController.dispose();
-    // 停止扫描
-    NfcManager.instance.stopSession();
+    try {
+      // 停止扫描
+      NfcManager.instance.stopSession();
+    } catch (e) {
+      debugPrint('停止NFC会话时出错: $e');
+    }
     super.dispose();
   }
 
@@ -73,11 +77,12 @@ class _NfcLoginScreenState extends State<NfcLoginScreen> with SingleTickerProvid
         });
       }
     } catch (e) {
+      debugPrint('检查NFC可用性时出错: $e');
       setState(() {
         _isError = true;
         _errorMessage = appProvider.getLocalizedString(
-          '检查NFC可用性时出错',
-          'Error checking NFC availability',
+          '检查NFC可用性时出错: $e',
+          'Error checking NFC availability: $e',
         );
       });
     }
@@ -95,155 +100,267 @@ class _NfcLoginScreenState extends State<NfcLoginScreen> with SingleTickerProvid
     try {
       NfcManager.instance.startSession(
         onDiscovered: (NfcTag tag) async {
-          // 打印完整的标签数据用于调试
-          debugPrint('发现NFC标签: ${tag.data}');
+          try {
+            // 打印完整的标签数据用于调试
+            debugPrint('发现NFC标签');
 
-          // 获取标签ID
-          final nfcId = _getNfcId(tag);
+            // 尝试打印标签数据，但捕获异常
+            try {
+              debugPrint('NFC标签数据: ${tag.data}');
 
-          if (nfcId != null) {
-            debugPrint('提取的NFC ID: $nfcId');
+              // 打印完整的标签结构，帮助调试
+              debugPrint('完整NFC标签数据结构:');
+              tag.data.forEach((key, value) {
+                debugPrint('- $key: $value');
+                if (value is Map) {
+                  value.forEach((subKey, subValue) {
+                    debugPrint('  - $subKey: $subValue');
+                  });
+                }
+              });
+            } catch (e) {
+              debugPrint('打印NFC数据时出错: $e');
+            }
 
-            // 尝试使用NFC ID登录
-            final success = await userProvider.loginWithNfc(nfcId);
+            // 获取标签ID
+            String? nfcId;
+            try {
+              nfcId = _getNfcId(tag);
+              debugPrint('提取的NFC ID: $nfcId');
+            } catch (e) {
+              debugPrint('获取NFC ID时出错: $e');
+              nfcId = null;
+            }
 
-            setState(() {
-              _isScanning = false;
+            if (nfcId != null && nfcId.isNotEmpty) {
+              bool success = false;
+              try {
+                // 尝试使用NFC ID登录
+                success = await userProvider.loginWithNfc(nfcId);
+              } catch (e) {
+                debugPrint('调用loginWithNfc时出错: $e');
+                success = false;
+              }
 
-              if (success) {
-                _isSuccess = true;
-                // 登录成功后返回上一页
-                Future.delayed(const Duration(seconds: 1), () {
-                  Navigator.pop(context);
+              if (mounted) {
+                setState(() {
+                  _isScanning = false;
+
+                  if (success) {
+                    _isSuccess = true;
+                    // 登录成功后返回上一页
+                    Future.delayed(const Duration(seconds: 1), () {
+                      if (mounted) {
+                        Navigator.pop(context);
+                      }
+                    });
+                  } else {
+                    _isError = true;
+                    _errorMessage = appProvider.getLocalizedString(
+                      '登录失败，此卡未注册或已失效',
+                      'Login failed, this card is not registered or has expired',
+                    );
+                  }
                 });
-              } else {
+              }
+
+              // 停止NFC会话
+              try {
+                NfcManager.instance.stopSession();
+              } catch (e) {
+                debugPrint('停止NFC会话时出错: $e');
+              }
+            } else {
+              if (mounted) {
+                setState(() {
+                  _isScanning = false;
+                  _isError = true;
+                  _errorMessage = appProvider.getLocalizedString(
+                    '读取NFC卡失败，请重试',
+                    'Failed to read NFC card, please try again',
+                  );
+                });
+              }
+
+              // 停止NFC会话
+              try {
+                NfcManager.instance.stopSession();
+              } catch (e) {
+                debugPrint('停止NFC会话时出错: $e');
+              }
+            }
+          } catch (e) {
+            debugPrint('处理NFC标签时出错: $e');
+            if (mounted) {
+              setState(() {
+                _isScanning = false;
                 _isError = true;
                 _errorMessage = appProvider.getLocalizedString(
-                  '登录失败，此卡未注册或已失效',
-                  'Login failed, this card is not registered or has expired',
+                  '处理NFC卡数据时出错: $e',
+                  'Error processing NFC card data: $e',
                 );
-              }
-            });
+              });
+            }
 
             // 停止NFC会话
-            NfcManager.instance.stopSession();
-          } else {
+            try {
+              NfcManager.instance.stopSession();
+            } catch (e) {
+              debugPrint('停止NFC会话时出错: $e');
+            }
+          }
+        },
+        onError: (error) {
+          debugPrint('NFC会话出错: $error');
+          if (mounted) {
             setState(() {
               _isScanning = false;
               _isError = true;
               _errorMessage = appProvider.getLocalizedString(
-                '读取NFC卡失败，请重试',
-                'Failed to read NFC card, please try again',
+                'NFC扫描出错: $error',
+                'NFC scan error: $error',
               );
             });
-
-            // 停止NFC会话
-            NfcManager.instance.stopSession();
           }
-        },
-        onError: (error) {
-          setState(() {
-            _isScanning = false;
-            _isError = true;
-            _errorMessage = appProvider.getLocalizedString(
-              'NFC扫描出错: $error',
-              'NFC scan error: $error',
-            );
-          });
           return Future<void>.value(); // 添加返回值
         },
       );
     } catch (e) {
-      setState(() {
-        _isScanning = false;
-        _isError = true;
-        _errorMessage = appProvider.getLocalizedString(
-          '启动NFC扫描时出错',
-          'Error starting NFC scan',
-        );
-      });
+      debugPrint('启动NFC扫描时出错: $e');
+      if (mounted) {
+        setState(() {
+          _isScanning = false;
+          _isError = true;
+          _errorMessage = appProvider.getLocalizedString(
+            '启动NFC扫描时出错: $e',
+            'Error starting NFC scan: $e',
+          );
+        });
+      }
     }
   }
 
   // 从NFC标签中提取ID
   String? _getNfcId(NfcTag tag) {
-    debugPrint('NFC标签数据: ${tag.data}');
-
-    // 尝试获取NDEF格式的ID
-    if (tag.data.containsKey('ndef')) {
-      final ndef = tag.data['ndef'];
-      if (ndef != null && ndef['identifier'] != null) {
-        return _bytesToHex(ndef['identifier']);
-      }
-    }
-
-    // 尝试获取MIFARE格式的ID
-    if (tag.data.containsKey('mifare')) {
-      final mifare = tag.data['mifare'];
-      if (mifare != null && mifare['identifier'] != null) {
-        return _bytesToHex(mifare['identifier']);
-      }
-    }
-
-    // 尝试获取ISO15693格式的ID
-    if (tag.data.containsKey('iso15693')) {
-      final iso15693 = tag.data['iso15693'];
-      if (iso15693 != null && iso15693['identifier'] != null) {
-        return _bytesToHex(iso15693['identifier']);
-      }
-    }
-
-    // 尝试获取ISO14443格式的ID
-    if (tag.data.containsKey('iso14443')) {
-      final iso14443 = tag.data['iso14443'];
-      if (iso14443 != null && iso14443['identifier'] != null) {
-        return _bytesToHex(iso14443['identifier']);
-      }
-    }
-
-    // 一般的标签ID
-    if (tag.data.containsKey('nfca')) {
-      final nfca = tag.data['nfca'];
-      if (nfca != null && nfca['identifier'] != null) {
-        return _bytesToHex(nfca['identifier']);
-      }
-    }
-
-    // 尝试获取NfcA格式的ID (更多格式支持)
-    if (tag.data.containsKey('nfca')) {
-      final nfca = tag.data['nfca'];
-      if (nfca != null) {
-        if (nfca['identifier'] != null) {
-          return _bytesToHex(nfca['identifier']);
-        }
-        if (nfca['id'] != null) {
-          return _bytesToHex(nfca['id']);
+    try {
+      // 尝试获取NDEF格式的ID
+      if (tag.data.containsKey('ndef')) {
+        final ndef = tag.data['ndef'];
+        if (ndef != null && ndef['identifier'] != null) {
+          return _bytesToHex(ndef['identifier']);
         }
       }
-    }
 
-    // 尝试获取NfcB格式的ID
-    if (tag.data.containsKey('nfcb')) {
-      final nfcb = tag.data['nfcb'];
-      if (nfcb != null && nfcb['applicationData'] != null) {
-        return _bytesToHex(nfcb['applicationData']);
+      // 尝试获取MIFARE格式的ID
+      if (tag.data.containsKey('mifare')) {
+        final mifare = tag.data['mifare'];
+        if (mifare != null && mifare['identifier'] != null) {
+          return _bytesToHex(mifare['identifier']);
+        }
       }
-    }
 
-    // 尝试获取全部原始数据
-    for (final key in tag.data.keys) {
-      final data = tag.data[key];
-      if (data is Map && data.containsKey('identifier')) {
-        return _bytesToHex(data['identifier']);
+      // 尝试获取ISO15693格式的ID
+      if (tag.data.containsKey('iso15693')) {
+        final iso15693 = tag.data['iso15693'];
+        if (iso15693 != null && iso15693['identifier'] != null) {
+          return _bytesToHex(iso15693['identifier']);
+        }
       }
-    }
 
-    return null;
+      // 尝试获取ISO14443格式的ID
+      if (tag.data.containsKey('iso14443')) {
+        final iso14443 = tag.data['iso14443'];
+        if (iso14443 != null && iso14443['identifier'] != null) {
+          return _bytesToHex(iso14443['identifier']);
+        }
+      }
+
+      // 尝试获取NfcA格式的ID
+      if (tag.data.containsKey('nfca')) {
+        final nfca = tag.data['nfca'];
+        if (nfca != null) {
+          if (nfca['identifier'] != null) {
+            return _bytesToHex(nfca['identifier']);
+          }
+          if (nfca['id'] != null) {
+            return _bytesToHex(nfca['id']);
+          }
+        }
+      }
+
+      // 尝试获取NfcB格式的ID
+      if (tag.data.containsKey('nfcb')) {
+        final nfcb = tag.data['nfcb'];
+        if (nfcb != null && nfcb['applicationData'] != null) {
+          return _bytesToHex(nfcb['applicationData']);
+        }
+      }
+
+      // 尝试获取全部原始数据
+      for (final key in tag.data.keys) {
+        final data = tag.data[key];
+        if (data is Map && data.containsKey('identifier')) {
+          return _bytesToHex(data['identifier']);
+        }
+      }
+
+      // 如果上述方法都失败，尝试备用方法
+      return _fallbackGetNfcId(tag);
+    } catch (e) {
+      debugPrint('提取NFC ID时出错: $e');
+      return _fallbackGetNfcId(tag);
+    }
+  }
+
+  // 备用方法：尝试从任何字节数组中提取ID
+  // 修改 _fallbackGetNfcId 方法中的相关代码
+  String? _fallbackGetNfcId(NfcTag tag) {
+    try {
+      // 遍历所有数据，找到任何可能的字节数组
+      for (final entry in tag.data.entries) {
+        final value = entry.value;
+        if (value is Map) {
+          for (final subEntry in value.entries) {
+            if (subEntry.value is List && (subEntry.value as List).isNotEmpty) {
+              debugPrint('使用备用方法从 ${entry.key}.${subEntry.key} 提取ID');
+              // 添加类型转换，确保传递 List<int>
+              final List<dynamic> dynamicList = subEntry.value as List;
+              final List<int> intList = dynamicList.map((item) => item is int ? item : 0).toList();
+              return _bytesToHex(intList);
+            }
+          }
+        } else if (value is List && value.isNotEmpty) {
+          debugPrint('使用备用方法从 ${entry.key} 直接提取ID');
+          // 添加类型转换，确保传递 List<int>
+          final List<dynamic> dynamicList = value as List;
+          final List<int> intList = dynamicList.map((item) => item is int ? item : 0).toList();
+          return _bytesToHex(intList);
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint('备用NFC ID提取方法失败: $e');
+      return null;
+    }
   }
 
   // 将字节数组转换为十六进制字符串
   String _bytesToHex(List<int> bytes) {
-    return bytes.map((e) => e.toRadixString(16).padLeft(2, '0')).join();
+    try {
+      return bytes.map((e) => e.toRadixString(16).padLeft(2, '0')).join();
+    } catch (e) {
+      debugPrint('字节转十六进制失败: $e');
+      // 更加健壮的实现
+      String result = '';
+      for (var byte in bytes) {
+        try {
+          result += byte.toRadixString(16).padLeft(2, '0');
+        } catch (e) {
+          debugPrint('处理单个字节时出错: $e');
+        }
+      }
+      return result;
+    }
   }
 
   @override
@@ -278,11 +395,68 @@ class _NfcLoginScreenState extends State<NfcLoginScreen> with SingleTickerProvid
 
               // 操作按钮
               _buildActionButton(appProvider),
+
+              // 调试按钮 - 仅用于测试，可以在生产环境中移除
+              if (_isScanning)
+                ElevatedButton(
+                  onPressed: () {
+                    // 模拟发现一个固定的NFC ID (对应auth_service.dart中的测试用户)
+                    _simulateNfcDetection('04215aa22a0289');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                  ),
+                  child: const Text('调试：模拟NFC扫描'),
+                ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  // 模拟NFC检测 - 仅用于调试
+  void _simulateNfcDetection(String mockNfcId) async {
+    final appProvider = Provider.of<AppProvider>(context, listen: false);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+    debugPrint('模拟NFC扫描，使用ID: $mockNfcId');
+
+    try {
+      // 尝试停止任何活动的NFC会话
+      NfcManager.instance.stopSession();
+    } catch (e) {
+      debugPrint('停止NFC会话时出错: $e');
+    }
+
+    try {
+      final success = await userProvider.loginWithNfc(mockNfcId);
+
+      setState(() {
+        _isScanning = false;
+
+        if (success) {
+          _isSuccess = true;
+          // 登录成功后返回上一页
+          Future.delayed(const Duration(seconds: 1), () {
+            Navigator.pop(context);
+          });
+        } else {
+          _isError = true;
+          _errorMessage = appProvider.getLocalizedString(
+            '登录失败，此卡未注册或已失效',
+            'Login failed, this card is not registered or has expired',
+          );
+        }
+      });
+    } catch (e) {
+      debugPrint('模拟NFC登录时出错: $e');
+      setState(() {
+        _isScanning = false;
+        _isError = true;
+        _errorMessage = '模拟登录出错: $e';
+      });
+    }
   }
 
   // 构建状态图标
@@ -473,7 +647,11 @@ class _NfcLoginScreenState extends State<NfcLoginScreen> with SingleTickerProvid
       return TextButton(
         onPressed: () {
           // 停止扫描并返回
-          NfcManager.instance.stopSession();
+          try {
+            NfcManager.instance.stopSession();
+          } catch (e) {
+            debugPrint('停止NFC会话时出错: $e');
+          }
           Navigator.pop(context);
         },
         style: TextButton.styleFrom(

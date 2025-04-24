@@ -84,40 +84,61 @@ class _ShakeDetectorState extends State<ShakeDetector> {
 
   // 处理摇晃事件
   void _onShake() {
-    final appProvider = Provider.of<AppProvider>(context, listen: false);
-    final postProvider = Provider.of<PostProvider>(context, listen: false);
+    try {
+      final appProvider = Provider.of<AppProvider>(context, listen: false);
+      final postProvider = Provider.of<PostProvider>(context, listen: false);
 
-    // 显示刷新提示
-    setState(() {
-      _showRefreshing = true;
-    });
-
-    // 刷新内容
-    postProvider.refreshCurrentTab().then((_) {
-      // 延迟一段时间后隐藏提示
-      Future.delayed(const Duration(seconds: 1), () {
-        if (mounted) {
-          setState(() {
-            _showRefreshing = false;
-          });
-        }
+      // 显示刷新提示
+      setState(() {
+        _showRefreshing = true;
       });
 
-      // 显示刷新成功提示
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              appProvider.getLocalizedString(
-                '摇一摇刷新成功，为您推荐了新内容',
-                'Shake refresh successful, new content recommended for you',
-              ),
+      // 刷新内容 - 现在会特别更新推荐页面
+      postProvider.refreshCurrentTab().then((_) {
+        // 延迟一段时间后隐藏提示
+        Future.delayed(const Duration(seconds: 1), () {
+          if (mounted) {
+            setState(() {
+              _showRefreshing = false;
+            });
+          }
+        });
+
+        // 显示刷新成功提示
+        if (context.mounted) {
+          String message = '';
+          // 如果在"发现"标签页的"推荐"分类下，显示特殊消息
+          if (postProvider.currentTab == HomeTab.explore &&
+              postProvider.currentCategory == ExploreCategory.recommended) {
+            message = appProvider.getLocalizedString(
+              '摇一摇成功！为您更新了推荐内容',
+              'Shake successful! Refreshed recommended content for you',
+            );
+          } else {
+            message = appProvider.getLocalizedString(
+              '摇一摇刷新成功，为您更新了内容',
+              'Shake refresh successful, content updated for you',
+            );
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(message),
+              duration: const Duration(seconds: 2),
+              backgroundColor: const Color(0xFFE53935),
+              behavior: SnackBarBehavior.floating,
             ),
-            duration: const Duration(seconds: 1),
-          ),
-        );
+          );
+        }
+      });
+    } catch (e) {
+      debugPrint('摇一摇刷新出错: $e');
+      if (mounted) {
+        setState(() {
+          _showRefreshing = false;
+        });
       }
-    });
+    }
   }
 
   @override

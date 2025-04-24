@@ -21,7 +21,7 @@ class AuthService {
 
   // 用于测试的NFC ID到用户的映射
   final Map<String, User> _mockNfcUsers = {
-    // 添加你实际NFC卡的UID，用于测试
+    // 测试用户1
     'abc123456789': User(
       id: 'user1',
       username: '测试用户',
@@ -32,7 +32,7 @@ class AuthService {
       followingCount: 5,
       likesCount: 20,
     ),
-    // 可以添加更多测试用户
+    // 测试用户2
     '04d23a5a985d80': User(
       id: 'user2',
       username: '学生测试',
@@ -43,30 +43,39 @@ class AuthService {
       followingCount: 8,
       likesCount: 15,
     ),
-    // 添加你的NFC卡
+    // 用户提供的NFC卡UID
     '04215aa22a0289': User(
       id: 'user3',
-      username: 'Dankao',  // 你可以修改为你喜欢的用户名
-      studentId: '2023003',   // 你可以修改为你的学号
+      username: 'Dankao',
+      studentId: '114514',
       avatar: null,
-      bio: '这是我的个人账号',
-      followersCount: 0,
-      followingCount: 0,
-      likesCount: 0,
+      bio: 'A stupid guy who developed this APP',
+      followersCount: 3,
+      followingCount: 7,
+      likesCount: 12,
     ),
   };
 
   // NFC卡登录
   Future<AuthResult> loginWithNfc(String nfcId) async {
+    // 安全检查
+    if (nfcId == null || nfcId.isEmpty) {
+      debugPrint('NFC ID为空，无法登录');
+      return AuthResult(
+        success: false,
+        errorMessage: 'NFC ID为空',
+      );
+    }
+
     debugPrint('尝试使用NFC ID登录: $nfcId');
 
     // 在实际生产环境中，应该调用后端API
     // 以下是模拟后端验证的代码，用于测试目的
 
-    // 模拟网络延迟
-    await Future.delayed(const Duration(seconds: 1));
-
     try {
+      // 模拟网络延迟
+      await Future.delayed(const Duration(seconds: 1));
+
       // 模拟登录逻辑 - 在实际应用中，这应该是一个API调用
       if (_mockNfcUsers.containsKey(nfcId)) {
         // 登录成功
@@ -84,6 +93,7 @@ class AuthService {
       } else {
         // 登录失败 - 未找到关联用户
         debugPrint('NFC登录失败: 未找到与ID关联的用户');
+        debugPrint('注册的NFC IDs: ${_mockNfcUsers.keys.join(', ')}');
         return AuthResult(
           success: false,
           errorMessage: '未找到与此NFC卡关联的用户',

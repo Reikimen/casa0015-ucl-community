@@ -26,7 +26,7 @@ class ExploreTab extends StatelessWidget {
                   ? _buildLoadingIndicator()
                   : posts.isEmpty
                   ? _buildEmptyView()
-                  : _buildPostsList(posts),
+                  : _buildPostsList(posts, postProvider),
             ),
           ],
         );
@@ -77,15 +77,11 @@ class ExploreTab extends StatelessWidget {
   }
 
   // 构建帖子列表
-  Widget _buildPostsList(List<dynamic> posts) {
+  Widget _buildPostsList(List<dynamic> posts, PostProvider postProvider) {
     return RefreshIndicator(
       color: const Color(0xFFE53935),
       onRefresh: () async {
         // 下拉刷新
-        final postProvider = Provider.of<PostProvider>(
-          navigatorKey.currentContext!,
-          listen: false,
-        );
         await postProvider.fetchExplorePosts();
       },
       child: ListView.builder(

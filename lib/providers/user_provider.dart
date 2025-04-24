@@ -42,6 +42,11 @@ class UserProvider extends ChangeNotifier {
 
   // NFC登录
   Future<bool> loginWithNfc(String nfcId) async {
+    if (nfcId == null || nfcId.isEmpty) {
+      debugPrint('UserProvider: NFC ID为空，无法登录');
+      return false;
+    }
+
     _setLoading(true);
     try {
       debugPrint('UserProvider: 尝试使用NFC ID登录: $nfcId');
@@ -49,7 +54,7 @@ class UserProvider extends ChangeNotifier {
       final authService = AuthService();
       final result = await authService.loginWithNfc(nfcId);
 
-      if (result.success) {
+      if (result.success && result.user != null && result.token != null) {
         _currentUser = result.user;
         _isLoggedIn = true;
 
