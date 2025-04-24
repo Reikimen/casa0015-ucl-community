@@ -7,6 +7,9 @@ class AppProvider extends ChangeNotifier {
   bool _isEnglish = false;
   bool _autoTranslate = false; // 自动翻译功能开关
 
+  // Add translation cache
+  final Map<String, String> _translationCache = {};
+
   bool get isEnglish => _isEnglish;
   bool get autoTranslate => _autoTranslate; // 自动翻译状态的getter
 
@@ -108,6 +111,10 @@ class AppProvider extends ChangeNotifier {
     _isEnglish = !_isEnglish;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isEnglish', _isEnglish);
+
+    // Clear translation cache when language changes
+    _translationCache.clear();
+
     notifyListeners();
   }
 
@@ -116,6 +123,10 @@ class AppProvider extends ChangeNotifier {
     _autoTranslate = !_autoTranslate;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('autoTranslate', _autoTranslate);
+
+    // Clear translation cache when setting changes
+    _translationCache.clear();
+
     notifyListeners();
   }
 
@@ -124,7 +135,12 @@ class AppProvider extends ChangeNotifier {
     return _isEnglish ? enText : zhText;
   }
 
-  // 增强版翻译方法
+  // Generate a cache key for translations
+  String _getCacheKey(String text, bool toEnglish) {
+    return "${toEnglish ? 'zh2en' : 'en2zh'}_$text";
+  }
+
+  // 增强版翻译方法 - with caching
   Future<String> translateText(String text, {bool toEnglish = true}) async {
     if (text.isEmpty) return text;
 
@@ -132,19 +148,33 @@ class AppProvider extends ChangeNotifier {
     if (!_autoTranslate) return text;
 
     // 如果当前是中文模式且不需要翻译成英文，或者当前是英文模式且不需要翻译成中文，直接返回原文
-    if ((_isEnglish && !toEnglish) || (!_isEnglish && !toEnglish)) {
+    if ((_isEnglish && !toEnglish) || (!_isEnglish && toEnglish)) {
       return text;
+    }
+
+    // Generate cache key
+    String cacheKey = _getCacheKey(text, toEnglish);
+
+    // Check if translation is already in cache
+    if (_translationCache.containsKey(cacheKey)) {
+      return _translationCache[cacheKey]!;
     }
 
     debugPrint('准备翻译文本: "$text" ${toEnglish ? "→ 英文" : "→ 中文"}');
 
     // 首先尝试本地翻译映射
     if (toEnglish && _localZhToEn.containsKey(text)) {
-      debugPrint('使用本地映射翻译: $text -> ${_localZhToEn[text]}');
-      return _localZhToEn[text]!;
+      final result = _localZhToEn[text]!;
+      // Cache the result
+      _translationCache[cacheKey] = result;
+      debugPrint('使用本地映射翻译: $text -> $result');
+      return result;
     } else if (!toEnglish && _localEnToZh.containsKey(text)) {
-      debugPrint('使用本地映射翻译: $text -> ${_localEnToZh[text]}');
-      return _localEnToZh[text]!;
+      final result = _localEnToZh[text]!;
+      // Cache the result
+      _translationCache[cacheKey] = result;
+      debugPrint('使用本地映射翻译: $text -> $result');
+      return result;
     }
 
     // 接下来尝试通过API翻译
@@ -186,13 +216,22 @@ class AppProvider extends ChangeNotifier {
 
           final translations = data['data']['translations'] as List;
           final result = translations[0]['translatedText'];
+
+          // Cache the result
+          _translationCache[cacheKey] = result;
+
           debugPrint('翻译结果: "$result"');
           return result;
         } else {
           debugPrint('翻译响应格式不正确: ${response.body}');
 
           // 回退到简单内容替换
-          return _simpleTranslate(text, toEnglish);
+          final result = _simpleTranslate(text, toEnglish);
+
+          // Cache the simple translation result
+          _translationCache[cacheKey] = result;
+
+          return result;
         }
       } else {
         // 请求失败，记录详细错误信息
@@ -211,13 +250,23 @@ class AppProvider extends ChangeNotifier {
         }
 
         // 回退到简单内容替换
-        return _simpleTranslate(text, toEnglish);
+        final result = _simpleTranslate(text, toEnglish);
+
+        // Cache the simple translation result
+        _translationCache[cacheKey] = result;
+
+        return result;
       }
     } catch (e) {
       debugPrint('翻译过程出错: $e');
 
       // 回退到简单内容替换
-      return _simpleTranslate(text, toEnglish);
+      final result = _simpleTranslate(text, toEnglish);
+
+      // Cache the simple translation result
+      _translationCache[cacheKey] = result;
+
+      return result;
     }
   }
 
@@ -250,6 +299,12 @@ class AppProvider extends ChangeNotifier {
       debugPrint('简单替换出错: $e');
       return text;
     }
+  }
+
+  // Clear translation cache
+  void clearTranslationCache() {
+    _translationCache.clear();
+    debugPrint('翻译缓存已清空');
   }
 
   // 测试翻译功能

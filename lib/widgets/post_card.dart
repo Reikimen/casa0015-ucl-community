@@ -25,6 +25,11 @@ class _PostCardState extends State<PostCard> {
   String _translatedContent = '';
   bool _isTranslating = false;
   bool _translationCompleted = false;
+  // Add a flag to track if translation is needed
+  bool _needsTranslation = false;
+  // Add language state tracking
+  bool _lastIsEnglish = false;
+  bool _lastAutoTranslate = false;
 
   @override
   void initState() {
@@ -32,37 +37,37 @@ class _PostCardState extends State<PostCard> {
     _translatedTitle = widget.post.title;
     _translatedContent = widget.post.content;
 
-    // 初始化时检查是否需要翻译
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAndTranslate();
-    });
+    // Initial check for translation needs will be done in didChangeDependencies
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _checkAndTranslate();
-  }
 
-  // 当应用语言或自动翻译设置变化时，检查是否需要重新翻译
-  void _checkAndTranslate() {
     final appProvider = Provider.of<AppProvider>(context, listen: false);
 
-    // 如果已经完成翻译，但语言或翻译设置变化，重新翻译
-    if (_translationCompleted &&
-        (appProvider.isEnglish || appProvider.autoTranslate)) {
-      _translateContent();
-    }
-    // 如果未完成翻译且需要翻译
-    else if (!_translationCompleted &&
+    // Track if language settings have changed
+    bool settingsChanged = appProvider.isEnglish != _lastIsEnglish ||
+        appProvider.autoTranslate != _lastAutoTranslate;
+
+    // Update cached settings
+    _lastIsEnglish = appProvider.isEnglish;
+    _lastAutoTranslate = appProvider.autoTranslate;
+
+    // Only translate if settings changed or it wasn't translated before
+    if ((settingsChanged || !_translationCompleted) &&
         appProvider.isEnglish &&
-        appProvider.autoTranslate) {
+        appProvider.autoTranslate &&
+        !_isTranslating) {
       _translateContent();
     }
   }
 
-  // 翻译内容
+  // Simplified translation content method
   Future<void> _translateContent() async {
+    // Prevent duplicate translation requests
+    if (_isTranslating) return;
+
     setState(() {
       _isTranslating = true;
     });
@@ -70,13 +75,13 @@ class _PostCardState extends State<PostCard> {
     try {
       final appProvider = Provider.of<AppProvider>(context, listen: false);
 
-      // 翻译标题
+      // Translate title
       final translatedTitle = await appProvider.translateText(
         widget.post.title,
         toEnglish: appProvider.isEnglish,
       );
 
-      // 翻译内容
+      // Translate content
       final translatedContent = await appProvider.translateText(
         widget.post.content,
         toEnglish: appProvider.isEnglish,
@@ -88,12 +93,15 @@ class _PostCardState extends State<PostCard> {
           _translatedContent = translatedContent;
           _isTranslating = false;
           _translationCompleted = true;
+          _needsTranslation = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _isTranslating = false;
+          // Don't mark as completed if there was an error
+          _needsTranslation = true;
         });
       }
       debugPrint('翻译内容出错: $e');
@@ -106,14 +114,10 @@ class _PostCardState extends State<PostCard> {
     final postProvider = Provider.of<PostProvider>(context);
     final userProvider = Provider.of<UserProvider>(context);
 
-    // 检查是否需要再次翻译（语言或设置发生变化）
-    if (_translationCompleted &&
-        ((appProvider.isEnglish && appProvider.autoTranslate) ||
-            (!appProvider.isEnglish && !appProvider.autoTranslate))) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _translateContent();
-      });
-    }
+    // Determine if we need to display translated content
+    final shouldShowTranslated = appProvider.isEnglish &&
+        appProvider.autoTranslate &&
+        _translationCompleted;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -169,9 +173,7 @@ class _PostCardState extends State<PostCard> {
                   _isTranslating
                       ? _buildTranslatingIndicator()
                       : Text(
-                    appProvider.isEnglish && appProvider.autoTranslate
-                        ? _translatedTitle
-                        : widget.post.title,
+                    shouldShowTranslated ? _translatedTitle : widget.post.title,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -186,9 +188,7 @@ class _PostCardState extends State<PostCard> {
                   _isTranslating
                       ? _buildTranslatingIndicator()
                       : Text(
-                    appProvider.isEnglish && appProvider.autoTranslate
-                        ? _translatedContent
-                        : widget.post.content,
+                    shouldShowTranslated ? _translatedContent : widget.post.content,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[700],

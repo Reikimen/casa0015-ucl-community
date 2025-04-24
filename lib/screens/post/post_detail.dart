@@ -34,12 +34,15 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   bool _showComments = false;
   bool _submittingComment = false;
 
-  // 翻译相关状态
+  // Translation-related state
   String _translatedTitle = '';
   String _translatedContent = '';
   List<String> _translatedComments = [];
   bool _isTranslating = false;
   bool _translationCompleted = false;
+  // Add language state tracking
+  bool _lastIsEnglish = false;
+  bool _lastAutoTranslate = false;
 
   @override
   void initState() {
@@ -60,22 +63,32 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _checkAndTranslate();
-  }
 
-  // 当应用语言或自动翻译设置变化时，检查是否需要重新翻译
-  void _checkAndTranslate() {
     final appProvider = Provider.of<AppProvider>(context, listen: false);
 
-    // 只有当帖子已加载且需要翻译时
-    if (_post != null && appProvider.isEnglish && appProvider.autoTranslate) {
-      _translateContent();
+    // Track if language settings have changed
+    bool settingsChanged = appProvider.isEnglish != _lastIsEnglish ||
+        appProvider.autoTranslate != _lastAutoTranslate;
+
+    // Update cached settings
+    _lastIsEnglish = appProvider.isEnglish;
+    _lastAutoTranslate = appProvider.autoTranslate;
+
+    // Only check for translation if post is loaded
+    if (_post != null) {
+      // Only translate if settings changed or it wasn't translated before
+      if ((settingsChanged || !_translationCompleted) &&
+          appProvider.isEnglish &&
+          appProvider.autoTranslate &&
+          !_isTranslating) {
+        _translateContent();
+      }
     }
   }
 
-  // 翻译帖子内容和评论
+  // Optimized translation function
   Future<void> _translateContent() async {
-    if (_post == null) return;
+    if (_post == null || _isTranslating) return;
 
     setState(() {
       _isTranslating = true;
@@ -84,19 +97,19 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     try {
       final appProvider = Provider.of<AppProvider>(context, listen: false);
 
-      // 翻译标题
+      // Translate title
       final translatedTitle = await appProvider.translateText(
         _post!.title,
         toEnglish: appProvider.isEnglish,
       );
 
-      // 翻译内容
+      // Translate content
       final translatedContent = await appProvider.translateText(
         _post!.content,
         toEnglish: appProvider.isEnglish,
       );
 
-      // 翻译评论
+      // Translate comments
       List<String> translatedComments = [];
       if (_comments.isNotEmpty) {
         for (var comment in _comments) {
@@ -121,6 +134,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       if (mounted) {
         setState(() {
           _isTranslating = false;
+          // Don't mark as completed if there was an error
         });
       }
       debugPrint('翻译内容出错: $e');
@@ -139,10 +153,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       setState(() {
         _post = post;
         _isLoadingPost = false;
+        // Reset translation state when loading a new post
+        _translationCompleted = false;
+        _translatedTitle = '';
+        _translatedContent = '';
       });
 
-      // 获取数据后检查是否需要翻译
-      _checkAndTranslate();
+      // Check if translation is needed after post is loaded
+      final appProvider = Provider.of<AppProvider>(context, listen: false);
+      if (appProvider.isEnglish && appProvider.autoTranslate) {
+        _translateContent();
+      }
     } catch (e) {
       setState(() {
         _isLoadingPost = false;
@@ -174,11 +195,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         _comments = comments;
         _isLoadingComments = false;
 
-        // 重置翻译评论的列表
+        // Reset comment translations
         _translatedComments = List.filled(comments.length, '');
+        // Need to re-translate if comments change
+        _translationCompleted = false;
       });
 
-      // 获取评论后，检查是否需要翻译
+      // Check if translation is needed after comments are loaded
       final appProvider = Provider.of<AppProvider>(context, listen: false);
       if (appProvider.isEnglish && appProvider.autoTranslate) {
         _translateContent();
@@ -361,14 +384,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   Widget build(BuildContext context) {
     final appProvider = Provider.of<AppProvider>(context);
 
-    // 当语言或翻译设置变化时，重新检查翻译需求
-    if (_post != null && _translationCompleted &&
-        ((appProvider.isEnglish && appProvider.autoTranslate) ||
-            (!appProvider.isEnglish && !appProvider.autoTranslate))) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _translateContent();
-      });
-    }
+    // Determine if we need to display translated content
+    final shouldShowTranslated = appProvider.isEnglish &&
+        appProvider.autoTranslate &&
+        _translationCompleted;
 
     return Scaffold(
       appBar: AppBar(
@@ -452,9 +471,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         _isTranslating
                             ? _buildTranslatingIndicator()
                             : Text(
-                          appProvider.isEnglish && appProvider.autoTranslate
-                              ? _translatedTitle
-                              : _post!.title,
+                          shouldShowTranslated ? _translatedTitle : _post!.title,
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -509,9 +526,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         _isTranslating
                             ? _buildTranslatingIndicator()
                             : Text(
-                          appProvider.isEnglish && appProvider.autoTranslate
-                              ? _translatedContent
-                              : _post!.content,
+                          shouldShowTranslated ? _translatedContent : _post!.content,
                           style: const TextStyle(
                             fontSize: 16,
                             height: 1.5,
@@ -633,8 +648,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 _comments[index],
                                 appProvider,
                                 translatedContent:
-                                appProvider.isEnglish &&
-                                    appProvider.autoTranslate &&
+                                shouldShowTranslated &&
                                     _translatedComments.length > index
                                     ? _translatedComments[index]
                                     : null,
