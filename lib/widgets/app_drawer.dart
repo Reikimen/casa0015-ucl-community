@@ -79,9 +79,9 @@ class AppDrawer extends StatelessWidget {
           const Divider(),
 
           // 测试翻译按钮
-          _buildTestTranslationButton(context, appProvider),
-
-          const SizedBox(height: 10),
+          // _buildTestTranslationButton(context, appProvider),
+          //
+          // const SizedBox(height: 10),
 
           // 自动翻译开关
           _buildAutoTranslateSwitch(context, appProvider),
