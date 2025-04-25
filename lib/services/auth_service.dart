@@ -56,9 +56,8 @@ class AuthService {
     ),
   };
 
-  // NFC卡登录
+  // 修改 loginWithNfc 方法以生成包含用户ID的 token
   Future<AuthResult> loginWithNfc(String nfcId) async {
-    // 安全检查
     if (nfcId == null || nfcId.isEmpty) {
       debugPrint('NFC ID为空，无法登录');
       return AuthResult(
@@ -69,20 +68,14 @@ class AuthService {
 
     debugPrint('尝试使用NFC ID登录: $nfcId');
 
-    // 在实际生产环境中，应该调用后端API
-    // 以下是模拟后端验证的代码，用于测试目的
-
     try {
-      // 模拟网络延迟
       await Future.delayed(const Duration(seconds: 1));
 
-      // 模拟登录逻辑 - 在实际应用中，这应该是一个API调用
       if (_mockNfcUsers.containsKey(nfcId)) {
-        // 登录成功
         final user = _mockNfcUsers[nfcId]!;
-        final token = 'mock_token_${DateTime.now().millisecondsSinceEpoch}';
+        // 生成包含用户ID的 token
+        final token = 'mock_token_${user.id}_${DateTime.now().millisecondsSinceEpoch}';
 
-        // 打印登录信息用于调试
         debugPrint('NFC登录成功: ${user.username}');
 
         return AuthResult(
@@ -91,7 +84,6 @@ class AuthService {
           token: token,
         );
       } else {
-        // 登录失败 - 未找到关联用户
         debugPrint('NFC登录失败: 未找到与ID关联的用户');
         debugPrint('注册的NFC IDs: ${_mockNfcUsers.keys.join(', ')}');
         return AuthResult(
@@ -100,62 +92,51 @@ class AuthService {
         );
       }
     } catch (e) {
-      // 处理错误
       debugPrint('NFC登录过程中出错: $e');
       return AuthResult(
         success: false,
         errorMessage: '登录过程出错，请重试',
       );
     }
-
-    // 实际的API调用代码（目前注释掉）
-    /*
-    try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/auth/nfc-login'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'nfc_id': nfcId}),
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return AuthResult(
-          success: true,
-          user: User.fromJson(data['user']),
-          token: data['token'],
-        );
-      } else {
-        final data = json.decode(response.body);
-        return AuthResult(
-          success: false,
-          errorMessage: data['message'] ?? '登录失败',
-        );
-      }
-    } catch (e) {
-      debugPrint('NFC登录出错: $e');
-      return AuthResult(
-        success: false,
-        errorMessage: '网络错误，请稍后再试',
-      );
-    }
-    */
   }
 
-  // 获取当前用户信息
+  // 添加获取当前用户信息的方法
   Future<User?> getUserProfile() async {
     try {
       final headers = await _getHeaders();
-      final response = await http.get(
-        Uri.parse('$_baseUrl/user/profile'),
-        headers: headers,
-      );
+      final token = await _storageService.getAuthToken();
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body)['data'];
-        return User.fromJson(data);
-      } else {
-        return null;
+      if (token != null && token.isNotEmpty) {
+        // 检查 token 格式是否正确
+        if (token.startsWith('mock_token_')) {
+          // 从 token 中解析用户ID
+          final parts = token.split('_');
+          if (parts.length >= 3) {
+            final userId = parts[2];
+
+            // 查找匹配的用户
+            for (var entry in _mockNfcUsers.entries) {
+              if (entry.value.id == userId) {
+                debugPrint('找到匹配的用户: ${entry.value.username}');
+                return entry.value;
+              }
+            }
+          }
+
+          // 如果没有找到匹配的用户，返回一个默认用户
+          return User(
+            id: 'user1',
+            username: '测试用户',
+            studentId: '2023001',
+            bio: '这是一个测试账号',
+            followersCount: 10,
+            followingCount: 5,
+            likesCount: 20,
+          );
+        }
       }
+
+      return null;
     } catch (e) {
       debugPrint('获取用户信息出错: $e');
       return null;

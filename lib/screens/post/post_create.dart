@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../providers/app_provider.dart';
 import '../../providers/post_provider.dart';
 import '../../providers/user_provider.dart';
@@ -166,22 +167,61 @@ class _PostCreateScreenState extends State<PostCreateScreen> {
     );
   }
 
-  // 选择图片
+  // 修改后的选择图片方法
   Future<void> _pickImage() async {
     try {
+      // 请求权限
+      final status = await Permission.photos.request();
+      if (!status.isGranted) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('需要照片权限才能选择图片'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
       final pickedFile = await _imagePicker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 80,
+        maxWidth: 1024,  // 限制图片尺寸
+        maxHeight: 1024, // 限制图片尺寸
       );
 
       if (pickedFile != null) {
+        if (!mounted) return;
+
+        // 检查文件大小
+        final file = File(pickedFile.path);
+        final fileSize = await file.length();
+
+        if (fileSize > 5 * 1024 * 1024) { // 限制最大 5MB
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('图片太大，请选择小于 5MB 的图片'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+
         setState(() {
-          _selectedImage = File(pickedFile.path);
+          _selectedImage = file;
         });
       }
     } catch (e) {
       // 处理选择图片出错
       debugPrint('选择图片出错: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('选择图片失败: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 

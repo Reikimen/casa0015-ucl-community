@@ -313,7 +313,7 @@ class _NfcLoginScreenState extends State<NfcLoginScreen> with SingleTickerProvid
   }
 
   // 备用方法：尝试从任何字节数组中提取ID
-  // 修改 _fallbackGetNfcId 方法中的相关代码
+  // 修改后的 _fallbackGetNfcId 方法
   String? _fallbackGetNfcId(NfcTag tag) {
     try {
       // 遍历所有数据，找到任何可能的字节数组
@@ -323,17 +323,17 @@ class _NfcLoginScreenState extends State<NfcLoginScreen> with SingleTickerProvid
           for (final subEntry in value.entries) {
             if (subEntry.value is List && (subEntry.value as List).isNotEmpty) {
               debugPrint('使用备用方法从 ${entry.key}.${subEntry.key} 提取ID');
-              // 添加类型转换，确保传递 List<int>
+              // 修复类型转换问题
               final List<dynamic> dynamicList = subEntry.value as List;
-              final List<int> intList = dynamicList.map((item) => item is int ? item : 0).toList();
+              final List<int> intList = List<int>.from(dynamicList.map((item) => item is int ? item : 0));
               return _bytesToHex(intList);
             }
           }
         } else if (value is List && value.isNotEmpty) {
           debugPrint('使用备用方法从 ${entry.key} 直接提取ID');
-          // 添加类型转换，确保传递 List<int>
+          // 修复类型转换问题
           final List<dynamic> dynamicList = value as List;
-          final List<int> intList = dynamicList.map((item) => item is int ? item : 0).toList();
+          final List<int> intList = List<int>.from(dynamicList.map((item) => item is int ? item : 0));
           return _bytesToHex(intList);
         }
       }
@@ -344,10 +344,10 @@ class _NfcLoginScreenState extends State<NfcLoginScreen> with SingleTickerProvid
     }
   }
 
-  // 将字节数组转换为十六进制字符串
+  // 修改后的 _bytesToHex 方法
   String _bytesToHex(List<int> bytes) {
     try {
-      return bytes.map((e) => e.toRadixString(16).padLeft(2, '0')).join();
+      return bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
     } catch (e) {
       debugPrint('字节转十六进制失败: $e');
       // 更加健壮的实现
@@ -406,7 +406,7 @@ class _NfcLoginScreenState extends State<NfcLoginScreen> with SingleTickerProvid
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                   ),
-                  child: const Text('调试：模拟NFC扫描'),
+                  child: const Text('Login As Admin'),
                 ),
             ],
           ),
