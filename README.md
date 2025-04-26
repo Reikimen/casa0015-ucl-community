@@ -1,5 +1,8 @@
-# Campus Social App 📱 🎓
+# Campus Social App 📱 
 
+<div style="text-align: center;">
+  <img src="IMG-GitHub/Front-picture.jpeg" width="2000">
+</div>
 A Flutter-based campus social platform that enables students to connect, share experiences, and discover campus activities through an intuitive mobile interface. Features NFC-based authentication, automatic content translation, and a shake-to-refresh functionality.
 
 # ✨ Key Features
@@ -12,7 +15,11 @@ A Flutter-based campus social platform that enables students to connect, share e
 
 ## 📱 Screenshots
 
-<table style="width:120%; table-layout:fixed;">
+The screenshots offer a clear and intuitive glimpse of the key features:
+
+---
+
+<table style="width:100%; table-layout:fixed;">
   <tr>
     <th style="text-align:center;">NFC Quick Login</th>
     <th style="text-align:center;">Smart Bilingual Support</th>
@@ -20,12 +27,18 @@ A Flutter-based campus social platform that enables students to connect, share e
   <tr>
     <td style="text-align:center;">
       <img src="IMG-GitHub/login-right-NFC.gif" alt="NFC Login" width="320"/><br><br>
+    </td>
+    <td style="text-align:center;">
+      <img src="IMG-GitHub/trans-EN-ZH.gif" alt="Translation" width="320"/><br><br>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center;">
       🔸 Campus Card Verification<br>
       🔸 One-Tap Login<br>
       🔸 Fast and Seamless
     </td>
     <td style="text-align:center;">
-      <img src="IMG-GitHub/trans-EN-ZH.gif" alt="Translation" width="320"/><br><br>
       🔸 Real-Time Translation<br>
       🔸 Instant Language Switching<br>
       🔸 Smart Adaptation
@@ -33,10 +46,9 @@ A Flutter-based campus social platform that enables students to connect, share e
   </tr>
 </table>
 
-
 ---
 
-<table style="width:120%; table-layout:fixed;">
+<table style="width:100%; table-layout:fixed;">
   <tr>
     <th style="text-align:center;">Shake & Pull to Refresh</th>
     <th style="text-align:center;">Content Publishing Test</th>
@@ -44,12 +56,18 @@ A Flutter-based campus social platform that enables students to connect, share e
   <tr>
     <td style="text-align:center;">
       <img src="IMG-GitHub/fresh-posts-shack-pull.gif" alt="Refresh Posts" width="320"/><br><br>
+    </td>
+    <td style="text-align:center;">
+      <img src="IMG-GitHub/Post-test.gif" alt="Post Test" width="320"/><br><br>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center;">
       🔸 Shake to Refresh<br>
       🔸 Pull Down to Update<br>
       🔸 Instant Feedback
     </td>
     <td style="text-align:center;">
-      <img src="IMG-GitHub/Post-test.gif" alt="Post Test" width="320"/><br><br>
       🔸 Quick Post Creation<br>
       🔸 Rich Media Support<br>
       🔸 Interactive Engagement
