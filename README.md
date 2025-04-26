@@ -12,7 +12,7 @@ A Flutter-based campus social platform that enables students to connect, share e
 
 ## 📱 Screenshots
 
-<table style="width:100%; table-layout:fixed;">
+<table style="width:120%; table-layout:fixed;">
   <tr>
     <th style="text-align:center;">NFC Quick Login</th>
     <th style="text-align:center;">Smart Bilingual Support</th>
@@ -33,9 +33,10 @@ A Flutter-based campus social platform that enables students to connect, share e
   </tr>
 </table>
 
+
 ---
 
-<table style="width:100%; table-layout:fixed;">
+<table style="width:120%; table-layout:fixed;">
   <tr>
     <th style="text-align:center;">Shake & Pull to Refresh</th>
     <th style="text-align:center;">Content Publishing Test</th>
@@ -55,6 +56,7 @@ A Flutter-based campus social platform that enables students to connect, share e
     </td>
   </tr>
 </table>
+
 
 
 ## 🎥 Demo Video
