@@ -12,6 +12,8 @@ A Flutter-based campus social platform that enables students to connect, share e
 
 ## 📱 Screenshots
 
+Login & Bi-Language Support
+
 <div style="background: linear-gradient(135deg, rgba(253,246,236,0.6) 0%, rgba(253,246,236,0.6) 100%), 
            repeating-linear-gradient(45deg, rgba(255,240,220,0.2) 0px, rgba(255,240,220,0.2) 10px,
            transparent 10px, transparent 20px);
@@ -24,6 +26,8 @@ A Flutter-based campus social platform that enables students to connect, share e
    <img src="IMG-GitHub/login-right-NFC.gif" alt="NFC Login" width="250" style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"/> 
    <img src="IMG-GitHub/trans-EN-ZH.gif" alt="Translation" width="250" style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"/>
 </div>
+
+
 
 <div style="background: linear-gradient(135deg, rgba(253,246,236,0.6) 0%, rgba(253,246,236,0.6) 100%), 
            repeating-linear-gradient(45deg, rgba(255,240,220,0.2) 0px, rgba(255,240,220,0.2) 10px,
