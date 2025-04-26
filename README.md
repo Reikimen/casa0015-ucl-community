@@ -171,9 +171,9 @@ We welcome contributions! Please follow these steps:
 
 ## 📞 Contact
 
-Project Lead: Dankao Zhang
- Email: ucfndaz@ucl.ac.uk
- GitHub: [@Dankao](https://github.com/your-github-username)
+Project Lead: Dankao Chen
+ Email: zczqdc2@ucl.ac.uk
+ GitHub: [@Dankao](https://github.com/Reikimen)
 
 ## 🙏 Acknowledgments
 
