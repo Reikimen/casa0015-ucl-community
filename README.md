@@ -58,7 +58,9 @@ The app uses NFC-based authentication:
 
 - **Image Handling**: Image Picker, Permission Handler
 
-# 📦 Developing Instructions
+# 📦 Development Guidelines
+
+Our project adheres to modern Flutter development best practices with a focus on maintainability, performance, and user experience. This section provides comprehensive guidance for setting up the development environment, understanding our project architecture, and contributing to the codebase. Whether you're joining as a new developer or maintaining existing features, these guidelines ensure consistent code quality and seamless collaboration across the team. The following subsections cover installation procedures, project structure details, and contribution workflows to help you get started efficiently.
 
 ## 🚀 Installation
 
@@ -253,8 +255,10 @@ We welcome contributions! Please follow these steps:
 ## 📞 Contact
 
 Project Lead: Dankao Chen
- Email: zczqdc2@ucl.ac.uk
- GitHub: [@Dankao](https://github.com/Reikimen)
+
+Email: zczqdc2@ucl.ac.uk
+
+GitHub: [@Dankao](https://github.com/Reikimen)
 
 ## 🙏 Acknowledgments
 
