@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../utils/config.dart';
 
 class AppProvider extends ChangeNotifier {
   bool _isEnglish = false;
@@ -179,8 +180,13 @@ class AppProvider extends ChangeNotifier {
 
     // 接下来尝试通过API翻译
     try {
-      // Google Cloud Translation API密钥
-      const apiKey = 'AIzaSyCQxRgPWPW4vLG1azD7DAVl2RrSyLZsx2c';
+      // 从环境变量获取API密钥
+      final apiKey = Config.googleTranslationApiKey;
+
+      if (apiKey.isEmpty) {
+        debugPrint('翻译API密钥未配置');
+        return _simpleTranslate(text, toEnglish);
+      }
 
       // 设置源语言和目标语言
       final sourceLanguage = toEnglish ? 'zh' : 'en';

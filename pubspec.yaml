@@ -28,6 +28,8 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  flutter_dotenv: ^5.1.0
+
   flutter:
     sdk: flutter
 
@@ -87,6 +89,7 @@ flutter:
 
   # 资源文件
   assets:
+    - .env
     - assets/images/
 
 #
