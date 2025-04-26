@@ -4,24 +4,13 @@ A Flutter-based campus social platform that enables students to connect, share e
 
 ![Campus Social App Icon](https://claude.ai/api/placeholder/200/200)
 
-## ✨ Key Features
+# ✨ Key Features
 
 - **NFC Authentication**: Secure login using campus NFC cards
 - **Bilingual Support**: Automatic translation between Chinese and English
 - **Shake-to-Refresh**: Unique content update gesture
 - **Content Categories**: Organized posts by topics (Study, Activities, Lost & Found, Food, Accommodation)
 - **Social Interactions**: Like, comment, and share posts within the community
-
-## 🛠️ Technology Stack
-
-- **Framework**: Flutter 3.6.1+
-- **State Management**: Provider
-- **Authentication**: NFC Manager
-- **Networking**: HTTP/Dio
-- **Local Storage**: Shared Preferences
-- **UI Components**: Material Design, Cached Network Image
-- **Internationalization**: Flutter Localizations
-- **Image Handling**: Image Picker, Permission Handler
 
 ## 📱 Screenshots
 
@@ -30,6 +19,46 @@ A Flutter-based campus social platform that enables students to connect, share e
 ## 🎥 Demo Video
 
 [Watch Demo Video](https://your-demo-video-link.com/)
+
+## 🌐 Internationalization
+
+The app supports Chinese and English with automatic content translation:
+
+- UI elements translated via `.arb` files
+- Content translation powered by Google Cloud Translation API
+- Language preference saved locally
+
+## 🔐 Authentication
+
+The app uses NFC-based authentication:
+
+1. User taps their campus NFC card
+
+2. App reads the card UID
+
+3. Authentication service validates the card
+
+4. User session is created
+   
+## 🛠️ Technology Stack
+
+- **Framework**: Flutter 3.6.1+
+
+- **State Management**: Provider
+
+- **Authentication**: NFC Manager
+
+- **Networking**: HTTP/Dio
+
+- **Local Storage**: Shared Preferences
+
+- **UI Components**: Material Design, Cached Network Image
+
+- **Internationalization**: Flutter Localizations
+
+- **Image Handling**: Image Picker, Permission Handler
+
+# 📦 Developing Instructions
 
 ## 🚀 Installation
 
@@ -41,15 +70,14 @@ A Flutter-based campus social platform that enables students to connect, share e
 - Android SDK 21 or higher (for Android)
 - iOS 12.0 or higher (for iOS)
 
-### Setup Instructions
+### Setup Instructions (Android Studio Suggested)
 
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/your-username/campus-social-app.git
-   cd campus-social-app
+   git clone https://github.com/Reikimen/casa0015-ucl-community
    ```
-
+   
 2. **Install dependencies**
 
    ```bash
@@ -107,24 +135,9 @@ A Flutter-based campus social platform that enables students to connect, share e
    - The `.gitignore` file is configured to exclude sensitive files
    - For production deployment, set environment variables directly in your hosting platform
 
-## 📦 Dependencies
+## 🗂️ Project Structure
 
-```yaml
-dependencies:
-  flutter_localizations: sdk: flutter
-  provider: ^6.0.5
-  http: ^1.1.0
-  dio: ^5.3.2
-  shared_preferences: ^2.2.0
-  nfc_manager: ^3.3.0
-  image_picker: ^1.0.4
-  sensors_plus: ^3.0.3
-  cached_network_image: ^3.3.0
-  permission_handler: ^11.0.1
-  intl: ^0.19.0
-```
-
-## 🏗️ Architecture
+The application follows a clean architecture pattern with a clear separation of concerns. This structure promotes maintainability, scalability, and easy testing. 
 
 The app follows a clean architecture pattern with:
 
@@ -134,30 +147,98 @@ The app follows a clean architecture pattern with:
 - **Screens**: UI components organized by feature
 - **Widgets**: Reusable UI components
 
-## 🌐 Internationalization
+```
+lib/
+├── main.dart                    # Application entry point
+├── app.dart                     # Application configuration and theme setup
+├── routes/                      # Navigation and routing
+│   └── app_router.dart         # Route generation and navigation logic
+├── providers/                   # State management using Provider pattern
+│   ├── app_provider.dart       # Application-wide state (language, translation)
+│   ├── user_provider.dart      # User authentication and session state
+│   └── post_provider.dart      # Posts and content management
+├── models/                      # Data models
+│   ├── user_model.dart         # User data structure
+│   ├── post_model.dart         # Post content model
+│   ├── comment_model.dart      # Comment data structure
+│   └── auth_result.dart        # Authentication result model
+├── services/                    # Business logic and external services
+│   ├── api_service.dart        # API communication layer
+│   ├── auth_service.dart       # Authentication service
+│   └── storage_service.dart    # Local storage management
+├── screens/                     # UI pages
+│   ├── home/                   # Home screen and tabs
+│   │   ├── home_screen.dart    # Main home container
+│   │   ├── stared_tab.dart     # Following/starred content tab
+│   │   ├── explore_tab.dart    # Discovery tab with categories
+│   │   └── hot_tab.dart        # Trending posts tab
+│   ├── profile/                # User profile
+│   │   └── profile_screen.dart # User profile display
+│   ├── post/                   # Post-related screens
+│   │   ├── post_detail.dart    # Individual post view
+│   │   └── post_create.dart    # Create new post screen
+│   └── auth/                   # Authentication screens
+│       ├── login_screen.dart   # Login options screen
+│       └── nfc_login.dart      # NFC card authentication
+├── widgets/                     # Reusable UI components
+│   ├── app_drawer.dart         # Navigation drawer
+│   ├── post_card.dart          # Post display card
+│   ├── subcategory_bar.dart    # Category selection bar
+│   └── shake_detector.dart     # Shake gesture detector
+├── utils/                       # Utilities and helpers
+│   ├── constants.dart          # Application constants
+│   ├── helpers.dart            # Helper functions
+│   └── config.dart             # Environment configuration
+└── l10n/                       # Localization resources
+    ├── app_en.arb              # English translations
+    └── app_zh.arb              # Chinese translations
+```
 
-The app supports Chinese and English with automatic content translation:
+#### Providers (State Management)
 
-- UI elements translated via `.arb` files
-- Content translation powered by Google Cloud Translation API
-- Language preference saved locally
+The application uses the Provider pattern for state management, with three main providers:
 
-## 🔐 Authentication
+- **AppProvider**: Manages application-wide state such as language preferences, auto-translation settings, and theme
+- **UserProvider**: Handles user authentication state, NFC login, and user session management
+- **PostProvider**: Manages posts, categories, and content interaction logic
 
-The app uses NFC-based authentication:
+#### Services
 
-1. User taps their campus NFC card
-2. App reads the card UID
-3. Authentication service validates the card
-4. User session is created
+Services layer handles external API calls, local storage, and business logic:
 
-## 📝 Features in Development
+- **ApiService**: Centralizes all HTTP requests and API communications
+- **AuthService**: Manages authentication flows, including NFC card login
+- **StorageService**: Handles persistent local data storage using SharedPreferences
 
-- [ ] Push notifications
-- [ ] Direct messaging between users
-- [ ] Advanced post filtering
-- [ ] Event calendar integration
-- [ ] Offline mode support
+#### Screens
+
+The screens are organized by feature:
+
+- **Home**: Contains the main navigation structure with three tabs (Stared, Explore, Hot)
+- **Profile**: User profile and settings
+- **Post**: Post creation, viewing, and interaction
+- **Auth**: Login methods including NFC authentication
+
+#### Internationalization
+
+The app supports both English and Chinese languages:
+
+- Translation files are located in the `l10n` directory
+- Uses ARB files for managing translations
+- Includes auto-translation feature using Google Translate API
+
+#### Environment Configuration
+
+The project uses dotenv for environment configuration:
+
+- API keys are stored in `.env` file (not included in the repository)
+- Configuration is accessed through the `Config` class in `utils/config.dart`
+
+#### Configuration Files
+
+- **pubspec.yaml**: Defines dependencies and assets
+- **.env**: Stores environment variables (API keys, etc.)
+- **android/app/src/main/AndroidManifest.xml**: Android permissions and metadata
 
 ## 🤝 Contributing
 
