@@ -12,35 +12,20 @@ A Flutter-based campus social platform that enables students to connect, share e
 
 ## 📱 Screenshots
 
-Login & Bi-Language Support
+---
 
-<div style="background: linear-gradient(135deg, rgba(253,246,236,0.6) 0%, rgba(253,246,236,0.6) 100%), 
-           repeating-linear-gradient(45deg, rgba(255,240,220,0.2) 0px, rgba(255,240,220,0.2) 10px,
-           transparent 10px, transparent 20px);
-           padding: 20px;
-           border-radius: 15px;
-           display: flex;
-           justify-content: center;
-           align-items: center;
-           gap: 20px;">  
-   <img src="IMG-GitHub/login-right-NFC.gif" alt="NFC Login" width="250" style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"/> 
-   <img src="IMG-GitHub/trans-EN-ZH.gif" alt="Translation" width="250" style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"/>
-</div>
+| NFC Quick Login | Smart Bilingual Support |
+|:-:|:-:|
+| <img src="IMG-GitHub/login-right-NFC.gif" alt="NFC Login" width="250"/> | <img src="IMG-GitHub/trans-EN-ZH.gif" alt="Translation" width="250"/> |
+| 🔸 Campus Card Verification<br>🔸 One-Tap Login<br>🔸 Fast and Seamless | 🔸 Real-Time Translation<br>🔸 Instant Language Switching<br>🔸 Smart Adaptation |
 
+---
 
+| Shake & Pull to Refresh | Content Publishing Test |
+|:-:|:-:|
+| <img src="IMG-GitHub/fresh-posts-shack-pull.gif" alt="Refresh Posts" width="250"/> | <img src="IMG-GitHub/Post-test.gif" alt="Post Test" width="250"/> |
+| 🔸 Shake to Refresh<br>🔸 Pull Down to Update<br>🔸 Instant Feedback | 🔸 Quick Post Creation<br>🔸 Rich Media Support<br>🔸 Interactive Engagement |
 
-<div style="background: linear-gradient(135deg, rgba(253,246,236,0.6) 0%, rgba(253,246,236,0.6) 100%), 
-           repeating-linear-gradient(45deg, rgba(255,240,220,0.2) 0px, rgba(255,240,220,0.2) 10px,
-           transparent 10px, transparent 20px);
-           padding: 20px;
-           border-radius: 15px;
-           display: flex;
-           justify-content: center;
-           align-items: center;
-           gap: 20px;">  
-   <img src="IMG-GitHub/fresh-posts-shack-pull.gif" alt="Refresh Posts" width="250" style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"/> 
-   <img src="IMG-GitHub/Post-test.gif" alt="Refresh Posts" width="250" style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"/> 
-</div>
 
 ## 🎥 Demo Video
 
