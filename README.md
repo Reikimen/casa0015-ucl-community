@@ -2,19 +2,32 @@
 
 A Flutter-based campus social platform that enables students to connect, share experiences, and discover campus activities through an intuitive mobile interface. Features NFC-based authentication, automatic content translation, and a shake-to-refresh functionality.
 
-![Campus Social App Icon](https://claude.ai/api/placeholder/200/200)
-
 # ✨ Key Features
 
 - **NFC Authentication**: Secure login using campus NFC cards
 - **Bilingual Support**: Automatic translation between Chinese and English
-- **Shake-to-Refresh**: Unique content update gesture
 - **Content Categories**: Organized posts by topics (Study, Activities, Lost & Found, Food, Accommodation)
+- **Shake-to-Refresh**: Unique content update gesture
 - **Social Interactions**: Like, comment, and share posts within the community
 
 ## 📱 Screenshots
 
-<div align="center">   <img src="/api/placeholder/250/500" alt="Home Screen" width="250"/>   <img src="/api/placeholder/250/500" alt="Profile Page" width="250"/>   <img src="/api/placeholder/250/500" alt="Post Detail" width="250"/> </div>
+<div style="background: linear-gradient(135deg, rgba(253,246,236,0.6) 0%, rgba(253,246,236,0.6) 100%), 
+           repeating-linear-gradient(45deg, rgba(255,240,220,0.2) 0px, rgba(255,240,220,0.2) 10px,
+           transparent 10px, transparent 20px);
+           padding: 20px;
+           border-radius: 15px;
+           display: flex;
+           justify-content: center;
+           align-items: center;
+           gap: 20px;">  
+   <img src="IMG-GitHub/login-right-NFC.gif" alt="NFC Login" width="250" style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"/> 
+   <img src="IMG-GitHub/trans-EN-ZH.gif" alt="Translation" width="250" style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"/> 
+   <img src="IMG-GitHub/fresh-posts-shack-pull.gif" alt="Refresh Posts" width="250" style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"/> 
+   <img src="IMG-GitHub/Post-test.gif" alt="Refresh Posts" width="250" style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"/> 
+</div>
+
+
 
 ## 🎥 Demo Video
 
