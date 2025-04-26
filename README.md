@@ -12,19 +12,49 @@ A Flutter-based campus social platform that enables students to connect, share e
 
 ## 📱 Screenshots
 
+<table style="width:100%; table-layout:fixed;">
+  <tr>
+    <th style="text-align:center;">NFC Quick Login</th>
+    <th style="text-align:center;">Smart Bilingual Support</th>
+  </tr>
+  <tr>
+    <td style="text-align:center;">
+      <img src="IMG-GitHub/login-right-NFC.gif" alt="NFC Login" width="320"/><br><br>
+      🔸 Campus Card Verification<br>
+      🔸 One-Tap Login<br>
+      🔸 Fast and Seamless
+    </td>
+    <td style="text-align:center;">
+      <img src="IMG-GitHub/trans-EN-ZH.gif" alt="Translation" width="320"/><br><br>
+      🔸 Real-Time Translation<br>
+      🔸 Instant Language Switching<br>
+      🔸 Smart Adaptation
+    </td>
+  </tr>
+</table>
+
 ---
 
-| NFC Quick Login | Smart Bilingual Support |
-|:-:|:-:|
-| <img src="IMG-GitHub/login-right-NFC.gif" alt="NFC Login" width="250"/> | <img src="IMG-GitHub/trans-EN-ZH.gif" alt="Translation" width="250"/> |
-| 🔸 Campus Card Verification<br>🔸 One-Tap Login<br>🔸 Fast and Seamless | 🔸 Real-Time Translation<br>🔸 Instant Language Switching<br>🔸 Smart Adaptation |
-
----
-
-| Shake & Pull to Refresh | Content Publishing Test |
-|:-:|:-:|
-| <img src="IMG-GitHub/fresh-posts-shack-pull.gif" alt="Refresh Posts" width="250"/> | <img src="IMG-GitHub/Post-test.gif" alt="Post Test" width="250"/> |
-| 🔸 Shake to Refresh<br>🔸 Pull Down to Update<br>🔸 Instant Feedback | 🔸 Quick Post Creation<br>🔸 Rich Media Support<br>🔸 Interactive Engagement |
+<table style="width:100%; table-layout:fixed;">
+  <tr>
+    <th style="text-align:center;">Shake & Pull to Refresh</th>
+    <th style="text-align:center;">Content Publishing Test</th>
+  </tr>
+  <tr>
+    <td style="text-align:center;">
+      <img src="IMG-GitHub/fresh-posts-shack-pull.gif" alt="Refresh Posts" width="320"/><br><br>
+      🔸 Shake to Refresh<br>
+      🔸 Pull Down to Update<br>
+      🔸 Instant Feedback
+    </td>
+    <td style="text-align:center;">
+      <img src="IMG-GitHub/Post-test.gif" alt="Post Test" width="320"/><br><br>
+      🔸 Quick Post Creation<br>
+      🔸 Rich Media Support<br>
+      🔸 Interactive Engagement
+    </td>
+  </tr>
+</table>
 
 
 ## 🎥 Demo Video
