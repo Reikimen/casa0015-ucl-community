@@ -3,7 +3,9 @@
 <div style="text-align: center;">
   <img src="IMG-GitHub/Front-picture.jpeg" width="2000">
 </div>
-A Flutter-based campus social platform that enables students to connect, share experiences, and discover campus activities through an intuitive mobile interface. Features NFC-based authentication, automatic content translation, and a shake-to-refresh functionality.
+Campus Social App is an innovative mobile application for modern university campus ecology, which provides a cross-lingual and high-efficiency campus information exchange platform for students via NFC fast authentication, real-time Chinese/English translation and intelligent content recommendation. This app not only solves the problem of information fragmentation, but also helps students to access learning resources, discover academic activities and share learning experiences, as well as provides practical information on life such as lost and found, campus food and accommodation, and provides students with channels for socialising and communication. For schools, this app can help with better news broadcasting, events promotion and enhancing students' sense of belonging and engagement on campus, making it particularly suitable for modern universities with a high degree of internationalisation and a diverse student body.
+
+This project demonstrates the potential of mobile technologies in creating connected \& interactive campus environments by providing an innovative platform for student communication and content discovery.
 
 # ✨ Key Features
 
