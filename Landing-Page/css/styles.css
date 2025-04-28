@@ -292,7 +292,7 @@ ul {
 
 /* How It Works Section */
 .how-it-works {
-    background-color: var(--light-gray);
+    background-color: var(--white);
 }
 
 .steps {
@@ -348,7 +348,7 @@ ul {
 
 /* Screenshots Section */
 .screenshots {
-    background-color: var(--white);
+    background-color: var(--light-gray);
 }
 
 .screenshots-carousel {
