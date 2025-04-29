@@ -93,7 +93,7 @@ The screenshots offer a clear and intuitive glimpse of the key features:
 
 ## 🎥 Demo Video
 
-[Watch Demo Video](https://your-demo-video-link.com/)
+[Watch Demo Video](https://www.bilibili.com/video/BV1CFGyz5Ebx/?vd_source=d29a5e7864f6cf00667f0891671f69c8)
 
 ## 🌐 Internationalization
 
