@@ -10,8 +10,11 @@ Campus Social App is an innovative mobile application for modern university camp
 
 This app not only solves the problem of information fragmentation, but also helps students to access learning resources, discover academic activities and share learning experiences, as well as provides practical information on life such as lost and found, campus food and accommodation, and provides students with channels for socialising and communication. For schools, this app can help with better news broadcasting, events promotion and enhancing students' sense of belonging and engagement on campus, making it particularly suitable for modern universities with a high degree of internationalisation and a diverse student body.
 
-
 This project demonstrates the potential of mobile technologies in creating connected \& interactive campus environments by providing an innovative platform for student communication and content discovery.
+
+## Link to GitHub Repository
+
+GitHub Repository - [https://github.com/ucl-casa-ce/casa0015-mobile-assessment](https://github.com/ucl-casa-ce/casa0015-mobile-assessment)
 
 # ✨ Key Features
 
@@ -82,8 +85,11 @@ The screenshots offer a clear and intuitive glimpse of the key features:
     </td>
   </tr>
 </table>
+## 📖 Story Board
 
-
+<div style="text-align: center;">
+  <img src="IMG-GitHub/Story-Board.png" width="400">
+</div>
 
 ## 🎥 Demo Video
 
@@ -333,9 +339,20 @@ GitHub: [@Dankao](https://github.com/Reikimen)
 ## 🙏 Acknowledgments
 
 - UCL CASA for project support
+
 - Flutter community for excellent packages
+
 - Google Cloud for translation services
+
 - All contributors and testers
+
+
+## Declaration of Authorship
+
+Me, Dankao Chen HERE, confirm that the work presented in this assessment is my own. Where information has been derived from other sources, I confirm that this has been indicated in the work.
+
+29/04/2025
+
 
 ------
 
