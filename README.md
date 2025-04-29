@@ -16,6 +16,9 @@ This project demonstrates the potential of mobile technologies in creating conne
 
 GitHub Repository - [https://github.com/ucl-casa-ce/casa0015-mobile-assessment](https://github.com/ucl-casa-ce/casa0015-mobile-assessment)
 
+## Landing Page
+https://reikimen.github.io/casa0015-landing-page/
+
 # ✨ Key Features
 
 - **NFC Authentication**: Secure login using campus NFC cards
